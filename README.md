@@ -11,21 +11,23 @@ Install packages
 $ pip install -r requirements.txt
 ```
 
-Test server running
+Run server to make REST API calls from frontend
 ```
 # Navigate to manage.py directory level in api
 $ cd api
 
 # Run server and navigate to local host url
 $ python manage.py runserver
+
 ```
+
 
 You might see unapplied migrations when running the runserver command. (TODO)
 ```
-# Changes the database
-$ python manage.py migrate
+# When changing models.py, views.py, or serializers.py make migrations to reflect changes in the database (Do both commands in this order)
+$ python3 manage.py makemigrations
 
-$ python3 manage.py makemigrations models
+$ python manage.py migrate
 ```
 
 
@@ -35,8 +37,8 @@ Documentation
 # Navigate to http://127.0.0.1:8000/admin/ in order to fill some data or see the current tables
 Username: 'kody'
 Password: 'password
-# May need to get django-cors-headers
-# and add "corsheaders" to settings.py installed apps
-# https://www.youtube.com/watch?v=-O2wIkrHLgY&list=PL_c9BZzLwBRKFRIBWEWYCnV4Lk9HE3eYJ&index=33 (9:00 min)
+
+# Django tutorial reference
+# https://www.youtube.com/watch?v=-O2wIkrHLgY&list=PL_c9BZzLwBRKFRIBWEWYCnV4Lk9HE3eYJ&index=33
 ```
 

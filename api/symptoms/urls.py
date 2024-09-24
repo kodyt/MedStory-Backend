@@ -20,5 +20,6 @@ from symptoms import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/symptoms/', views.symptoms, name='symptom')
+    path('api/get_symptoms/', views.symptoms, name='symptom'),
+    path('api/symptom_log/', views.add_symptom_log, name='symptom_log'),
 ]
