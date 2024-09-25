@@ -16,7 +16,6 @@ def symptoms(request):
 def add_symptom_log(request):
     
     if request.method == 'POST':
-        print("FDSJOFNDSION")
         print(request.data)
 
         serializer = PatientDataSerializer(data=request.data)
