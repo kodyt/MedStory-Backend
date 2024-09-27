@@ -21,7 +21,7 @@ class PatientSymptomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientSymptom
-        fields = ['onset_created', 'onset_modified', 'reminder', 'severity', 'description', 'diagnosis']
+        fields = ['onset_created', 'onset_modified', 'set_reminder', 'severity', 'description', 'diagnosis']
 
     def create(self, validated_data):
         print("Start create function")
@@ -43,7 +43,7 @@ class PatientMedicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientMedication
-        fields = ['name', 'dosage', 'notes', 'reminder', 'diagnosis']
+        fields = ['name', 'dosage', 'notes', 'set_reminder', 'diagnosis']
 
     def create(self, validated_data):
         print("Start create function")

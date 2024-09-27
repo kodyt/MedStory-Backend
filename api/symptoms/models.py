@@ -15,11 +15,11 @@ class User(models.Model):
     gender = models.CharField(max_length=1) # M/F
 
     def __str__(self):
-        return (self.first_name, self.last_name)
+        return (self.first_name, self.last_nameD)
 
 class Diagnosis(models.Model):
     name = models.CharField(max_length=100)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -28,7 +28,7 @@ class PatientSymptom(models.Model):
     # id (primary key) automatically created
     onset_created = models.DateTimeField(default=datetime.now()) #TODO: do we need both timestamps?
     onset_modified = models.DateTimeField(auto_now_add=True)
-    reminder = models.BooleanField(default=False) # if the user wants a reminder for this
+    set_reminder = models.BooleanField(default=False) # if the user wants a reminder for this
     severity = models.IntegerField()
     description = models.CharField(max_length=1000) #TODO: change to absolute number
     diagnosis = models.ManyToManyField('Diagnosis')
@@ -40,7 +40,8 @@ class PatientMedication(models.Model):
     name = models.CharField(max_length=50) # longest medication name is 29 characters?
     dosage = models.FloatField()
     notes = models.CharField(max_length=1000)
-    reminder = models.BooleanField(default=False) # if the user wants a reminder for this
+    set_reminder = models.BooleanField(default=False) # if the user wants a reminder for this
+    diagnosis = models.ManyToManyField('Diagnosis')
 
     def __str__(self):
         return self.name

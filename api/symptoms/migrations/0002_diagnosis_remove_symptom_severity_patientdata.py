@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             name='severity',
         ),
         migrations.CreateModel(
-            name='PatientData',
+            name='PatientSymptom',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('time', models.DateTimeField(auto_now_add=True)),
