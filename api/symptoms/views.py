@@ -1,5 +1,5 @@
 from symptoms.models import Symptom
-from symptoms.serializers import SymptomSerializer, IllnessSerializer, PatientDataSerializer
+from symptoms.serializers import SymptomSerializer, UserSerializer, DiagnosisSerializer, PatientSymptomSerializer, PatientMedicationSerializer, ReminderSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ def add_symptom_log(request):
     if request.method == 'POST':
         # print(request.data)
 
-        serializer = PatientDataSerializer(data=request.data)
+        serializer = PatientSymptomSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()  # Save the data using the serializer's create method
             return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)

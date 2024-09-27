@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Illness',
+            name='Diagnosis',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('severity', models.IntegerField()),
                 ('description', models.CharField(max_length=200)),
                 ('notes', models.CharField(max_length=200)),
-                ('tag', models.ManyToManyField(to='symptoms.illness')),
+                ('tag', models.ManyToManyField(to='symptoms.diagnosis')),
             ],
         ),
     ]

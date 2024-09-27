@@ -1,33 +1,65 @@
 from rest_framework import serializers
-from symptoms.models import Symptom, Illness, PatientData
+from symptoms.models import Symptom, User, Diagnosis, PatientSymptom, PatientMedication, Reminder
 
 class SymptomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Symptom
         fields = ['name']
 
-class IllnessSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Illness
-        fields = ['name']
+        model = User
+        fields = ['first_name', 'last_name', 'gender']
 
-class PatientDataSerializer(serializers.ModelSerializer):
-    illness = IllnessSerializer(many=True)
+class DiagnosisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diagnosis
+        fields = ['name', 'user']
+
+class PatientSymptomSerializer(serializers.ModelSerializer):
+    diagnosis = DiagnosisSerializer(many=True)
 
     class Meta:
-        model = PatientData
-        fields = ['time', 'severity', 'description', 'notes', 'illness']
+        model = PatientSymptom
+        fields = ['onset_created', 'onset_modified', 'reminder', 'severity', 'description', 'diagnosis']
 
     def create(self, validated_data):
         print("Start create function")
         
-        illness_data = validated_data.pop('illness', [])
-        # Create the PatientData object
-        patient_data = PatientData.objects.create(**validated_data)
+        diagnosis_data = validated_data.pop('diagnosis', [])
+        # Create the PatientSymptom object
+        patient_symptom = PatientSymptom.objects.create(**validated_data)
         
-        # Process each illness and associate it with the PatientData
-        for illness_info in illness_data:
-            illness, created = Illness.objects.get_or_create(**illness_info)
-            patient_data.illness.add(illness)
+        # Process each diagnosis and associate it with the PatientData
+        for diagnosis_info in diagnosis_data:
+            diagnosis, created = Diagnosis.objects.get_or_create(**diagnosis_info)
+            patient_symptom.diagnosis.add(diagnosis)
         
-        return patient_data
+        return patient_symptom
+    
+
+class PatientMedicationSerializer(serializers.ModelSerializer):
+    diagnosis = DiagnosisSerializer(many=True)
+
+    class Meta:
+        model = PatientMedication
+        fields = ['name', 'dosage', 'notes', 'reminder', 'diagnosis']
+
+    def create(self, validated_data):
+        print("Start create function")
+        
+        diagnosis_data = validated_data.pop('diagnosis', [])
+        # Create the PatientSymptom object
+        patient_medication = PatientMedication.objects.create(**validated_data)
+        
+        # Process each diagnosis and associate it with the PatientData
+        for diagnosis_info in diagnosis_data:
+            diagnosis, created = Diagnosis.objects.get_or_create(**diagnosis_info)
+            patient_medication.diagnosis.add(diagnosis)
+        
+        return patient_medication
+    
+class ReminderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reminder
+        fields = ['time', 'frequency', 'text', 'symptom', 'medication']
