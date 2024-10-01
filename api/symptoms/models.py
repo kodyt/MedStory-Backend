@@ -1,59 +1,59 @@
 from django.db import models
 from datetime import datetime
-
+from django.utils import timezone
 # list of symptoms MedStory allows user to track
-class Symptom(models.Model):
-    # Change these to be what data a single symptom holds
-    name = models.CharField(max_length=100)
-    
-    def __str__(self):
-        return self.name
-    
 class User(models.Model):
-    first_name = models.CharField(max_length=1000) # longest first name is 747 characters?
-    last_name = models.CharField(max_length=1000)
-    gender = models.CharField(max_length=1) # M/F
+    # user_id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=1000, null=True) # longest first name is 747 characters?
+    last_name = models.CharField(max_length=1000, null=True)
+    gender = models.CharField(max_length=5, null=True) # M/F/Other
+    email = models.EmailField(unique=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now, null=True)
+    dob = models.DateField(null=True) # Date of birth
+    # allergies at some point
 
     def __str__(self):
         return (self.first_name, self.last_nameD)
 
+class Symptom(models.Model):
+    # Change these to be what data a single symptom holds
+    # symptom_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=True)
+    description = models.TextField(null=True)
+    
+    def __str__(self):
+        return self.name
+    
+
+class Medication(models.Model):
+    # m_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, null=True)
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return self.name
+
 class Diagnosis(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
 
-class PatientSymptom(models.Model):
-    # id (primary key) automatically created
-    onset_created = models.DateTimeField(default=datetime.now()) #TODO: do we need both timestamps?
-    onset_modified = models.DateTimeField(auto_now_add=True)
-    set_reminder = models.BooleanField(default=False) # if the user wants a reminder for this
-    severity = models.IntegerField()
-    description = models.CharField(max_length=1000) #TODO: change to absolute number
-    diagnosis = models.ManyToManyField('Diagnosis')
-
-    def __str__(self):
-        return f"Patient Report at {self.time}"
-    
-class PatientMedication(models.Model):
-    name = models.CharField(max_length=50) # longest medication name is 29 characters?
-    dosage = models.FloatField()
-    notes = models.CharField(max_length=1000)
-    set_reminder = models.BooleanField(default=False) # if the user wants a reminder for this
-    diagnosis = models.ManyToManyField('Diagnosis')
-
-    def __str__(self):
-        return self.name
+class BodyLocations(models.Model):
+    # body_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, null=True)
 
 class Reminder(models.Model):
-    time = models.DateTimeField()
+    # r_id = models.AutoField(primary_key=True)
+    time = models.DateTimeField(null=True)
     frequency = models.IntegerField() #TODO: figure out how to measure 
-    text = models.CharField(max_length=1000)
+    unit = models.IntegerField(default=0) # 0 = minutes, 1 = hours, 2 = days, 3 = weeks, 4 = months
+    text = models.CharField(max_length=1000, null=True)
     # a reminder can be associated with either a symptom or a medication
     # this way ensures that the reminder gets deleted when the associated symptom/medication is deleted
-    symptom = models.ForeignKey(PatientSymptom, on_delete=models.CASCADE, null=True, blank=True)
-    medication = models.ForeignKey(PatientMedication, on_delete=models.CASCADE, null=True, blank=True)
+    s_id = models.ForeignKey(Symptom, on_delete=models.CASCADE, null=True, blank=True)
+    m_id = models.ForeignKey(Medication, on_delete=models.CASCADE, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # ensure that a reminder is only associated with one of symptom/medication
@@ -63,5 +63,44 @@ class Reminder(models.Model):
 
     def __str__(self):
         return self.text
-
     
+
+
+class UserSymptomLog(models.Model):
+    # log_id = models.AutoField(primary_key=True)
+    # user_id = models.ForeignKey(User, on_delete=models.CASCADE) # To add once we do authentication
+    s_id = models.ForeignKey(Symptom, on_delete=models.CASCADE)
+    severity = models.IntegerField(null=True)
+    onset_time = models.DateTimeField(default=timezone.now)
+    modified_time = models.DateTimeField(default=timezone.now)
+    type_of_pain = models.JSONField(null=True)
+    diagnosis = models.ManyToManyField('Diagnosis')
+    notes = models.TextField(blank=True, null=True)
+
+    value = models.IntegerField(null=True)
+    unit = models.CharField(max_length=10, null=True)
+
+    def __str__(self):
+        return f"Patient Report at {self.time}"
+    
+# class UserMedicationLog(models.Model):
+#     name = models.CharField(max_length=50) # longest medication name is 29 characters?
+#     dosage = models.FloatField()
+#     notes = models.CharField(max_length=1000)
+#     set_reminder = models.BooleanField(default=False) # if the user wants a reminder for this
+#     diagnosis = models.ManyToManyField('Diagnosis')
+
+#     def __str__(self):
+#         return self.name
+
+class UserMedicationLog(models.Model):
+    # log_id = models.AutoField(primary_key=True)  # Integer primary key
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key to Users
+    med_id = models.ForeignKey(Medication, on_delete=models.CASCADE)  # Foreign key to Medications
+    dosage = models.CharField(max_length=255, null=True)  # Dosage of the medication
+    unit = models.CharField(null=True, max_length=50)  # Unit of dosage (e.g., "mg", "ml")
+    log_time = models.DateTimeField(null=True)  # Time the medication was taken
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f'Medication Log {self.log_id} for User {self.user_id}'

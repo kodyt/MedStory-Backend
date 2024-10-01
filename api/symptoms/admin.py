@@ -1,9 +1,11 @@
 from django.contrib import admin
-from symptoms.models import Symptom, User, Diagnosis, PatientSymptom, PatientMedication, Reminder
+import symptoms.models as models
 
-admin.site.register(Symptom)
-admin.site.register(User)
-admin.site.register(Diagnosis)
-admin.site.register(PatientSymptom)
-admin.site.register(PatientMedication)
-admin.site.register(Reminder)
+admin.site.register(models.User)
+admin.site.register(models.Symptom)
+admin.site.register(models.Medication)
+admin.site.register(models.Diagnosis)
+admin.site.register(models.BodyLocations)
+admin.site.register(models.Reminder)
+admin.site.register(models.UserSymptomLog)
+admin.site.register(models.UserMedicationLog)
