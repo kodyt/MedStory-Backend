@@ -85,6 +85,8 @@ WSGI_APPLICATION = 'symptoms.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+# Hide this password at some point
 PASSWORD = 'srkaNb0xllP1i0yIHfJJ'
 
 
