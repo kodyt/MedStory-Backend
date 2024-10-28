@@ -39,8 +39,8 @@ def add_symptom_log(request):
             return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
         
         reminder_serializer = ReminderSerializer(data=reminders)
-        if serializer.is_valid
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def add_medication_log(request):
