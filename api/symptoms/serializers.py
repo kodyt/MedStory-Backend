@@ -26,7 +26,6 @@ class PatientSymptomSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print("Start create function")
-        
         diagnosis_data = validated_data.pop('diagnosis', [])
         # Create the PatientSymptom object
         patient_symptom = UserSymptomLog.objects.create(**validated_data)
@@ -63,4 +62,5 @@ class PatientMedicationSerializer(serializers.ModelSerializer):
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
-        fields = ['time', 'frequency', 'text', 'symptom', 'medication']
+        # fields = ['time', 'frequency', 'text', 'symptom', 'medication']
+        fields = ['time', 'frequency', 'unit', 'text']

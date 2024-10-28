@@ -81,7 +81,7 @@ class UserSymptomLog(models.Model):
     unit = models.CharField(max_length=10, null=True)
 
     def __str__(self):
-        return f"Patient Report at {self.time}"
+        return f"Patient Report at {self.onset_time}"
     
 # class UserMedicationLog(models.Model):
 #     name = models.CharField(max_length=50) # longest medication name is 29 characters?
