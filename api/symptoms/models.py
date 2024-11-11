@@ -1,19 +1,30 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
+from django.conf import settings
 # list of symptoms MedStory allows user to track
-class User(models.Model):
-    # user_id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=1000, null=True) # longest first name is 747 characters?
-    last_name = models.CharField(max_length=1000, null=True)
+# class User(models.Model):
+#     # user_id = models.AutoField(primary_key=True)
+#     first_name = models.CharField(max_length=1000, null=True) # longest first name is 747 characters?
+#     last_name = models.CharField(max_length=1000, null=True)
+#     gender = models.CharField(max_length=5, null=True) # M/F/Other
+#     email = models.EmailField(unique=True, null=True)
+#     created_at = models.DateTimeField(default=timezone.now, null=True)
+#     dob = models.DateField(null=True) # Date of birth
+#     # allergies at some point
+
+#     def __str__(self):
+#         return (self.first_name, self.last_nameD)
+    
+class User(AbstractUser):
+    # Extending the built in User table
     gender = models.CharField(max_length=5, null=True) # M/F/Other
-    email = models.EmailField(unique=True, null=True)
     created_at = models.DateTimeField(default=timezone.now, null=True)
     dob = models.DateField(null=True) # Date of birth
-    # allergies at some point
 
     def __str__(self):
-        return (self.first_name, self.last_nameD)
+        return self.username
 
 class Symptom(models.Model):
     # Change these to be what data a single symptom holds
@@ -35,7 +46,7 @@ class Medication(models.Model):
 
 class Diagnosis(models.Model):
     name = models.CharField(max_length=100, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -68,7 +79,7 @@ class Reminder(models.Model):
 
 class UserSymptomLog(models.Model):
     # log_id = models.AutoField(primary_key=True)
-    # user_id = models.ForeignKey(User, on_delete=models.CASCADE) # To add once we do authentication
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # To add once we do authentication
     s_id = models.ForeignKey(Symptom, on_delete=models.CASCADE)
     severity = models.IntegerField(null=True)
     onset_time = models.DateTimeField(default=timezone.now)
@@ -95,7 +106,7 @@ class UserSymptomLog(models.Model):
 
 class UserMedicationLog(models.Model):
     # log_id = models.AutoField(primary_key=True)  # Integer primary key
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key to Users
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Foreign key to Users
     med_id = models.ForeignKey(Medication, on_delete=models.CASCADE)  # Foreign key to Medications
     dosage = models.CharField(max_length=255, null=True)  # Dosage of the medication
     unit = models.CharField(null=True, max_length=50)  # Unit of dosage (e.g., "mg", "ml")

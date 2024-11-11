@@ -87,17 +87,28 @@ WSGI_APPLICATION = 'symptoms.wsgi.application'
 # }
 
 # Hide this password at some point
-PASSWORD = 'srkaNb0xllP1i0yIHfJJ'
+PASSWORD_OLD = 'srkaNb0xllP1i0yIHfJJ'
+PASSWORD_NEW = '0fSqBHxuKXn1HhCR99za' # For medstory-new db instance
 
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'medstory',
+#         'USER': 'admin',
+#         'PASSWORD': PASSWORD_OLD,
+#         'HOST':'medstorydb.c1i08iqsse77.us-east-2.rds.amazonaws.com',
+#         'PORT':'3306'
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'medstory',
         'USER': 'admin',
-        'PASSWORD': PASSWORD,
-        'HOST':'medstorydb.c1i08iqsse77.us-east-2.rds.amazonaws.com',
+        'PASSWORD': PASSWORD_NEW,
+        'HOST':'medstory-new.c1i08iqsse77.us-east-2.rds.amazonaws.com',
         'PORT':'3306'
     }
 }
@@ -120,6 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'symptoms.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
