@@ -31,6 +31,8 @@ class Symptom(models.Model):
     # symptom_id = models.AutoField(primary_key=True, default=1)
     name = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
+    category = models.CharField(max_length=100, default="Numerical")
+    Units = models.CharField(max_length=50, default="lbs")
     
     def __str__(self):
         return self.name
@@ -81,11 +83,11 @@ class Reminder(models.Model):
 
 class UserSymptomLog(models.Model):
     # log_id = models.AutoField(primary_key=True, default=1)
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # When creating a foreign key, django appends "_id" to the end of it for some reason
     is_numerical = models.BooleanField(default=True)
     onset_time = models.DateTimeField(default=timezone.now)
     modified_time = models.DateTimeField(default=timezone.now)
-    s_id = models.ForeignKey(Symptom, on_delete=models.CASCADE)
+    symptom = models.ForeignKey(Symptom, on_delete=models.CASCADE)
     diagnosis = models.ManyToManyField(Diagnosis)
     notes = models.TextField(blank=True, null=True)
 

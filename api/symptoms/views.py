@@ -4,6 +4,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
+import datetime
+
 
 def symptoms(request):
     # invoke serializer and return to client
@@ -14,33 +17,39 @@ def symptoms(request):
 
 @api_view(['POST'])
 def add_symptom_log(request):
-    
+    # For numerical?
     if request.method == 'POST':
-        # print("Catching post request")
-        # print(request.data)
+        symptom_obj = get_object_or_404(Symptom, name=request.data["s_id"].lower())
+
+
+        # Have to get the authentication user_id from the cookies somehow
         symptom_data = {
-            "s_id": request.data["s_id"],
+            "s_id": symptom_obj.id,
+            "is_numerical": symptom_obj.category == "Numerical",
             "severity": request.data["severity"],
             "onset_time": request.data["onset_time"],
+            "modified_time": datetime.datetime.now(),
             "type_of_pain": request.data["type_of_pain"],
             "diagnosis": request.data["diagnosis"],
             "notes": request.data["notes"],
+            "value": "",
+            "unit": "",
         }
 
-        reminders = {
-            "frequency": int(request.data["freq"]),
-            "unit": request.data["remind_times"],
-            "text": "Example reminder text"
-        }
+        # reminders = {
+        #     "frequency": int(request.data["freq"]),
+        #     "unit": request.data["remind_times"],
+        #     "text": "Example reminder text"
+        # }
 
         serializer = PatientSymptomSerializer(data=symptom_data)
         if serializer.is_valid():
             serializer.save()  # Save the data using the serializer's create method
             return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
         
-        reminder_serializer = ReminderSerializer(data=reminders)
-        if serializer.is_valid:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # reminder_serializer = ReminderSerializer(data=reminders)
+        # if serializer.is_valid:
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def add_medication_log(request):
