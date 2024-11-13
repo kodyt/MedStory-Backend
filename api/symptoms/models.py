@@ -28,7 +28,7 @@ class User(AbstractUser):
 
 class Symptom(models.Model):
     # Change these to be what data a single symptom holds
-    # symptom_id = models.AutoField(primary_key=True)
+    # symptom_id = models.AutoField(primary_key=True, default=1)
     name = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
     
@@ -37,14 +37,16 @@ class Symptom(models.Model):
     
 
 class Medication(models.Model):
-    # m_id = models.AutoField(primary_key=True)
+    # med_id = models.AutoField(primary_key=True, default=1)
     name = models.CharField(max_length=255, null=True)
+    category = models.CharField(max_length=255, default="OTC")
     description = models.TextField(null=True)
 
     def __str__(self):
         return self.name
 
 class Diagnosis(models.Model):
+    # d_id = models.AutoField(primary_key=True, default=1)
     name = models.CharField(max_length=100, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -56,7 +58,7 @@ class BodyLocations(models.Model):
     name = models.CharField(max_length=255, null=True)
 
 class Reminder(models.Model):
-    # r_id = models.AutoField(primary_key=True)
+    # r_id = models.AutoField(primary_key=True, default=1)
     time = models.DateTimeField(null=True)
     frequency = models.IntegerField() #TODO: figure out how to measure 
     unit = models.IntegerField(default=0) # 0 = minutes, 1 = hours, 2 = days, 3 = weeks, 4 = months
@@ -78,40 +80,36 @@ class Reminder(models.Model):
 
 
 class UserSymptomLog(models.Model):
-    # log_id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # To add once we do authentication
-    s_id = models.ForeignKey(Symptom, on_delete=models.CASCADE)
-    severity = models.IntegerField(null=True)
+    # log_id = models.AutoField(primary_key=True, default=1)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    is_numerical = models.BooleanField(default=True)
     onset_time = models.DateTimeField(default=timezone.now)
     modified_time = models.DateTimeField(default=timezone.now)
-    type_of_pain = models.JSONField(null=True)
-    diagnosis = models.ManyToManyField('Diagnosis')
+    s_id = models.ForeignKey(Symptom, on_delete=models.CASCADE)
+    diagnosis = models.ManyToManyField(Diagnosis)
     notes = models.TextField(blank=True, null=True)
 
+    # General Symptom Fields
+    severity = models.IntegerField(null=True)
+    # type_of_pain = models.JSONField(null=True)
+
+    # Numeric Symptom Fields
     value = models.IntegerField(null=True)
-    unit = models.CharField(max_length=10, null=True)
+    unit = models.CharField(max_length=10, null=True) # The unit for the value for numeric symptoms
 
     def __str__(self):
         return f"Patient Report at {self.onset_time}"
-    
-# class UserMedicationLog(models.Model):
-#     name = models.CharField(max_length=50) # longest medication name is 29 characters?
-#     dosage = models.FloatField()
-#     notes = models.CharField(max_length=1000)
-#     set_reminder = models.BooleanField(default=False) # if the user wants a reminder for this
-#     diagnosis = models.ManyToManyField('Diagnosis')
 
-#     def __str__(self):
-#         return self.name
 
 class UserMedicationLog(models.Model):
-    # log_id = models.AutoField(primary_key=True)  # Integer primary key
+    # log_id = models.AutoField(primary_key=True, default=1)  # Integer primary key
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Foreign key to Users
     med_id = models.ForeignKey(Medication, on_delete=models.CASCADE)  # Foreign key to Medications
     dosage = models.CharField(max_length=255, null=True)  # Dosage of the medication
     unit = models.CharField(null=True, max_length=50)  # Unit of dosage (e.g., "mg", "ml")
     log_time = models.DateTimeField(null=True)  # Time the medication was taken
     notes = models.TextField(blank=True, null=True)
+    associated_symptoms = models.ManyToManyField(Symptom)
 
     def __str__(self):
         return f'Medication Log {self.log_id} for User {self.user_id}'
