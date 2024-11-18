@@ -4,8 +4,11 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
+import datetime
 
-def symptoms(request):
+
+def get_symptoms(request):
     # invoke serializer and return to client
     data = Symptom.objects.all()
     serializer = SymptomSerializer(data, many=True)
@@ -13,35 +16,59 @@ def symptoms(request):
 
 
 @api_view(['POST'])
-def add_symptom_log(request):
-    
+def add_numerical_symptom_log(request):
+    '''Logs Numerical symptoms'''
     if request.method == 'POST':
-        # print("Catching post request")
-        # print(request.data)
+        symptom_name = request.data.get("s_id", "").lower()
+        if not symptom_name:
+            return Response({"message": "Symptom name (s_id) is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        unit = request.data.get("unit", "").lower()
+        if not unit:
+            unit = "mmhg" # placeholder until we determine what this is
+
+
+        symptom_obj, created = Symptom.objects.get_or_create(
+            name=symptom_name,
+            defaults={
+                "description": request.data.get("description", "User created symptom."),
+                "category": request.data.get("category", "numerical"),
+                "Units": request.data.get("units", unit) # How should we specify this if it's not in the database
+            }
+        )
+
+        # Have to get the authentication user_id from the cookies somehow
         symptom_data = {
-            "s_id": request.data["s_id"],
+            "s_id": symptom_obj.id,
+            "is_numerical": symptom_obj.category == "Numerical",
             "severity": request.data["severity"],
             "onset_time": request.data["onset_time"],
-            "type_of_pain": request.data["type_of_pain"],
+            "modified_time": datetime.datetime.now(),
             "diagnosis": request.data["diagnosis"],
             "notes": request.data["notes"],
+            "value": request.data["value"], 
+            "unit": request.data["unit"], # Going to be initialized
         }
 
-        reminders = {
-            "frequency": int(request.data["freq"]),
-            "unit": request.data["remind_times"],
-            "text": "Example reminder text"
-        }
+        # reminders = {
+        #     "frequency": int(request.data["freq"]),
+        #     "unit": request.data["remind_times"],
+        #     "text": "Example reminder text"
+        # }
 
         serializer = PatientSymptomSerializer(data=symptom_data)
         if serializer.is_valid():
             serializer.save()  # Save the data using the serializer's create method
             return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
-        
-        reminder_serializer = ReminderSerializer(data=reminders)
-        if serializer.is_valid:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        else:
+            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # reminder_serializer = ReminderSerializer(data=reminders)
+        # if serializer.is_valid:
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'message': "Invalid request"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 @api_view(['POST'])
 def add_medication_log(request):
 
@@ -68,31 +95,3 @@ def add_medication_log(request):
             "unit": request.data["remind_times"],
             "text": "Example reminder text"
         }
-
-
-# @api_view(['POST'])
-# def add_symptom_numerical_log(request):
-    
-#     if request.method == 'POST':
-
-#         symptom_data = {
-#             "s_id": request.data["s_id"],
-#             "severity": request.data["severity"],
-#             "onset_time": request.data["time"],
-#             "type_of_pain": request.data["type_of_pain"],
-#             "diagnosis": request.data["diagnosis"],
-#             "notes": request.data["notes"],
-#         }
-
-#         reminders = {
-#             "frequency": int(request.data["freq"]),
-#             "unit": request.data["remind_times"],
-#             "text": "Example reminder text"
-#         }
-
-#         serializer = PatientSymptomSerializer(data=symptom_data)
-#         if serializer.is_valid():
-#             # serializer.save()  # Save the data using the serializer's create method
-#             return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
-        
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
