@@ -75,15 +75,53 @@ def add_general_symptom_log(request):
 
 @api_view(['POST'])
 def add_numerical_symptom_log(request):
-    # "unit": request.data["unit"], # Going to be initialized in the frontend
     '''Logs Numerical symptoms'''
     if request.method == 'POST':
+        symptom_name = request.data.get("s_id", "").lower()
+        if not symptom_name:
+            return Response({"message": "Symptom name (s_id) is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        unit = request.data.get("unit", "").lower()
+        if not unit:
+            unit = "mmhg" # placeholder until we determine what this is
+
+
+        symptom_obj, created = Symptom.objects.get_or_create(
+            name=symptom_name,
+            defaults={
+                "description": request.data.get("description", "User created symptom."),
+                "category": request.data.get("category", "generic"),
+                "Units": request.data.get("units", unit) # How should we specify this if it's not in the database
+            }
+        )
+        diagnoses = request.data.get('diagnosis', []) 
+        # Have to get the authentication user_id from the cookies somehow or frontend passes id?
+        user = User.objects.get(id=1)
+
+        log = UserSymptomLog.objects.create(
+
+            # FIGURE OUT WHAT VALUES ARE WHAT IN THE FRONTEND AND WHERE TO SAVE IT
+            user=user,
+            onset_time=request.data["onset_time"],
+            modified_time= datetime.datetime.now(),
+            notes= request.data["notes"],
+            symptom_id=symptom_obj.id,
+            is_numerical=symptom_obj.category == "numerical",
+            value=request.data["value"],
+            unit=unit,
+            )
         # reminder_serializer = ReminderSerializer(data=reminders)
-        # if serializer.is_valid:
-            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
+        # "unit": request.data["unit"], # Going to be initialized in the frontend
+
+        # Add diagnoses (if any)
+        for diagnosis_name in diagnoses:
+            diagnosis, created = Diagnosis.objects.get_or_create(name=diagnosis_name, user_id=user.id)
+            log.diagnoses.add(diagnosis)
+        return JsonResponse({'message': 'Symptom log created successfully', 'log_id': log.id}, status=201)
     else:
         return Response({'message': "Invalid request"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
 @api_view(['POST'])
 def add_medication_log(request):
 

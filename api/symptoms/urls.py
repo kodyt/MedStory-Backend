@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/get_symptoms/', views.get_symptoms, name='symptom'),
     path('api/add_general_symptom_log/', views.add_general_symptom_log, name='general_symptom_log'),
+    path('api/add_numerical_symptom_log', views.add_numerical_symptom_log, name='numerical_symptom_logging')
 ]
