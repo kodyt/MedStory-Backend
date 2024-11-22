@@ -1,4 +1,4 @@
-from symptoms.models import Symptom
+from symptoms.models import User, Symptom, UserSymptomLog, Diagnosis
 from symptoms.serializers import SymptomSerializer, UserSerializer, DiagnosisSerializer, PatientSymptomSerializer, PatientMedicationSerializer, ReminderSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
@@ -16,7 +16,7 @@ def get_symptoms(request):
 
 
 @api_view(['POST'])
-def add_numerical_symptom_log(request):
+def add_general_symptom_log(request):
     '''Logs Numerical symptoms'''
     if request.method == 'POST':
         symptom_name = request.data.get("s_id", "").lower()
@@ -36,19 +36,24 @@ def add_numerical_symptom_log(request):
                 "Units": request.data.get("units", unit) # How should we specify this if it's not in the database
             }
         )
+        diagnoses = request.data.get('diagnosis', []) 
+        # Have to get the authentication user_id from the cookies somehow or frontend passes id?
+        user = User.objects.get(id=1)
 
-        # Have to get the authentication user_id from the cookies somehow
-        symptom_data = {
-            "s_id": symptom_obj.id,
-            "is_numerical": symptom_obj.category == "Numerical",
-            "severity": request.data["severity"],
-            "onset_time": request.data["onset_time"],
-            "modified_time": datetime.datetime.now(),
-            "diagnosis": request.data["diagnosis"],
-            "notes": request.data["notes"],
-            "value": request.data["value"], 
-            "unit": request.data["unit"], # Going to be initialized
-        }
+        log = UserSymptomLog.objects.create(
+            user=user,
+            severity=request.data["severity"],
+            onset_time=request.data["onset_time"],
+            modified_time= datetime.datetime.now(),
+            notes= request.data["notes"],
+            symptom_id=symptom_obj.id,
+            is_numerical=symptom_obj.category == "numerical"
+            )
+        # Add diagnoses (if any)
+        for diagnosis_name in diagnoses:
+            diagnosis, created = Diagnosis.objects.get_or_create(name=diagnosis_name, user_id=user.id)
+            log.diagnoses.add(diagnosis)
+        return JsonResponse({'message': 'Symptom log created successfully', 'log_id': log.id}, status=201)
 
         # reminders = {
         #     "frequency": int(request.data["freq"]),
@@ -56,19 +61,29 @@ def add_numerical_symptom_log(request):
         #     "text": "Example reminder text"
         # }
 
-        serializer = PatientSymptomSerializer(data=symptom_data)
-        if serializer.is_valid():
-            serializer.save()  # Save the data using the serializer's create method
-            return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # serializer = PatientSymptomSerializer(data=symptom_data)
+        # if serializer.is_valid():
+        #     serializer.save()  # Save the data using the serializer's create method
+        #     return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
+        # else:
+        #     return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         # reminder_serializer = ReminderSerializer(data=reminders)
         # if serializer.is_valid:
         #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({'message': "Invalid request"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-
+@api_view(['POST'])
+def add_numerical_symptom_log(request):
+    # "unit": request.data["unit"], # Going to be initialized in the frontend
+    '''Logs Numerical symptoms'''
+    if request.method == 'POST':
+        # reminder_serializer = ReminderSerializer(data=reminders)
+        # if serializer.is_valid:
+            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Data saved successfully!'}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'message': "Invalid request"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 @api_view(['POST'])
 def add_medication_log(request):
 

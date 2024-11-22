@@ -90,6 +90,7 @@ class UserSymptomLog(models.Model):
     symptom = models.ForeignKey(Symptom, on_delete=models.CASCADE)
     diagnosis = models.ManyToManyField(Diagnosis)
     notes = models.TextField(blank=True, null=True)
+    diagnoses = models.ManyToManyField(Diagnosis, related_name='symptom_logs', blank=True)
 
     # General Symptom Fields
     severity = models.IntegerField(null=True)
